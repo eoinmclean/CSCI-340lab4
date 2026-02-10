@@ -1,5 +1,20 @@
 $(document).ready(function () {
 
+
+    function keywordFromWeatherCode(code) {
+        if (code === 0) return "sun";
+        if (code === 1 || code === 2) return "sky";
+        if (code === 3) return "cloud";
+        if (code === 45 || code === 48) return "fog";
+        if (code >= 51 && code <= 57) return "rain";
+        if (code >= 61 && code <= 67) return "rain";
+        if (code >= 71 && code <= 77) return "snow";
+        if (code >= 80 && code <= 82) return "storm";
+        if (code === 85 || code === 86) return "snow";
+        if (code >= 95 && code <= 99) return "lightning";
+        return "nature";
+    }
+
     $("#btnGo").on("click", function () {
         const city = $("#cityInput").val().trim();
 
@@ -49,6 +64,8 @@ $(document).ready(function () {
                 const temp = w.current_weather.temperature;
                 const wind = w.current_weather.windspeed;
                 const code = w.current_weather.weathercode;
+                const keyword = keywordFromWeatherCode(code);
+                $("#keywordResult").text(keyword);
 
                 $("#weatherResult").html(
                     "<p class='mb-1'><strong>City:</strong> " + place.name + "</p>" +
