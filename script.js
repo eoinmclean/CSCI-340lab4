@@ -15,6 +15,53 @@ $(document).ready(function () {
         return "nature";
     }
 
+    function fetchMetArt(keyword) {
+        $("#artResult").html("<p class='mb-0'>Searching the Met for: <strong>" + keyword + "</strong>…</p>");
+
+        const searchUrl =
+            "https://collectionapi.metmuseum.org/public/collection/v1/search" +
+            "?hasImages=true&q=" + encodeURIComponent(keyword);
+
+        $.getJSON(searchUrl, function (s) {
+            if (!s.objectIDs || s.objectIDs.length === 0) {
+                $("#artResult").html("<p class='text-danger mb-0'>No artworks found for that keyword.</p>");
+                return;
+            }
+
+            const idx = Math.floor(Math.random() * Math.min(40, s.objectIDs.length));
+            const objectId = s.objectIDs[idx];
+
+            const objectUrl =
+                "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + objectId;
+
+            $.getJSON(objectUrl, function (obj) {
+                if (!obj.primaryImageSmall) {
+                    $("#artResult").html("<p class='text-danger mb-0'>Artwork had no usable image.</p>");
+                    return;
+                }
+
+                const title = obj.title || "Untitled";
+                const artist = obj.artistDisplayName || "Unknown artist";
+                const date = obj.objectDate || "Unknown date";
+                const credit = obj.creditLine || "The Metropolitan Museum of Art";
+
+                $("#artResult").html(
+                    "<div class='mb-2'><strong>" + title + "</strong></div>" +
+                    "<div class='text-muted mb-2'>" + artist + " • " + date + "</div>" +
+                    "<img src='" + obj.primaryImageSmall + "' alt='Artwork image' style='max-width:100%; border-radius:12px;'>" +
+                    "<div class='text-muted small mt-2'>" + credit + "</div>"
+                );
+            }).fail(function () {
+                $("#artResult").html("<p class='text-danger mb-0'>Error loading artwork details.</p>");
+            });
+
+        }).fail(function () {
+            $("#artResult").html("<p class='text-danger mb-0'>Error searching the Met API.</p>");
+        });
+    }
+
+
+
     $("#btnGo").on("click", function () {
         const city = $("#cityInput").val().trim();
 
@@ -66,6 +113,8 @@ $(document).ready(function () {
                 const code = w.current_weather.weathercode;
                 const keyword = keywordFromWeatherCode(code);
                 $("#keywordResult").text(keyword);
+                fetchMetArt(keyword);
+
 
                 $("#weatherResult").html(
                     "<p class='mb-1'><strong>City:</strong> " + place.name + "</p>" +
